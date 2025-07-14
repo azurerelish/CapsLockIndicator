@@ -68,3 +68,5 @@ Feel free to fork the repository and submit pull requests. Please ensure code qu
 
 <img width="1566" height="1610" alt="CleanShot 2025-07-14 at 22 05 46@2x" src="https://github.com/user-attachments/assets/ed79dd7f-6243-46ad-8e6c-b9c4f7161587" />
 
+<img width="1358" height="1176" alt="CleanShot 2025-07-14 at 22 49 45@2x" src="https://github.com/user-attachments/assets/b7ee8ada-14bc-41a0-bf32-d9975ec012c6" />
+
