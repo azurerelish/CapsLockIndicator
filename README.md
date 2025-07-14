@@ -1,5 +1,6 @@
 # CapsLockIndicator
-![GitHub watchers](https://img.shields.io/github/watchers/azurerelish/CapsLockIndicator)
+![GitHub watchers](https://img.shields.io/github/watchers/azurerelish/CapsLockIndicator) 
+![GitHub Repo stars](https://img.shields.io/github/stars/azurerelish/CapsLockIndicator) 
 ![GitHub Downloads (all assets, all releases)](https://img.shields.io/github/downloads/azurerelish/CapsLockIndicator/total)
 
 
