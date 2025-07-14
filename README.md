@@ -48,11 +48,4 @@ Check that the app has accessibility permissions in `System Preferences > Securi
 
 Feel free to fork the repository and submit pull requests. Please ensure code quality and follow existing coding styles.
 
-## License
-
-This project is licensed under the MIT License.
-
-## Contact
-
-For more information, please contact [your-email@example.com].
 
