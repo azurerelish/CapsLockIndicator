@@ -1,4 +1,6 @@
 # CapsLockIndicator
+![GitHub Downloads (all assets, all releases)](https://img.shields.io/github/downloads/azurerelish/CapsLockIndicator/total)
+
 
 CapsLockIndicator is a macOS menu bar application that displays HUD notifications whenever the Caps Lock key is toggled or the keyboard input source is changed. Inspired by Apple's typical HUD design, the app provides visual feedback for these events.
 
