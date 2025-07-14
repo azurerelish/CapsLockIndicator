@@ -58,6 +58,7 @@ Check that the app has accessibility permissions in `System Preferences > Securi
 - If the HUD does not appear:
   - Confirm accessibility permissions are granted.
   - Check logs for any error messages during initialization.
+  - Still under beta testing phase...
 
 ## Contributing
 
