@@ -49,3 +49,6 @@ Check that the app has accessibility permissions in `System Preferences > Securi
 Feel free to fork the repository and submit pull requests. Please ensure code quality and follow existing coding styles.
 
 
+
+<img width="1566" height="1610" alt="CleanShot 2025-07-14 at 22 05 46@2x" src="https://github.com/user-attachments/assets/ed79dd7f-6243-46ad-8e6c-b9c4f7161587" />
+
