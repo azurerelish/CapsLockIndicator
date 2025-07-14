@@ -55,7 +55,7 @@ class HUDController {
         // Option 1: Distance from bottom of screen
         let windowOrigin = NSPoint(
             x: screenFrame.midX - windowSize.width / 2,
-            y: screenFrame.minY + 150 // 150 pixels from bottom
+            y: screenFrame.minY + 140 // 150 pixels from bottom
         )
         
         // Option 2: Distance from top of screen (uncomment to use)
@@ -110,7 +110,7 @@ class HUDController {
         effectView.blendingMode = .behindWindow
         effectView.state = .active
         effectView.wantsLayer = true
-        effectView.layer?.cornerRadius = 12
+        effectView.layer?.cornerRadius = 16
         effectView.layer?.masksToBounds = true
         // Explicitly ensure no border
         effectView.layer?.borderWidth = 0
