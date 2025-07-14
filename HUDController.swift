@@ -24,54 +24,31 @@ class HUDController {
     }
     
     private func cleanupHUD() {
-        //print("🧹 cleanupHUD called")
-        
         // Cancel any pending hide operation
         hideWorkItem?.cancel()
         hideWorkItem = nil
         
         // Clean up existing window
         if let window = hudWindow {
-            //print("🧹 Removing existing window")
             window.orderOut(nil)
             hudWindow = nil
         }
     }
     
     private func createAndShowWindow(iconName: String, text: String, iconColor: NSColor) {
-        //print("🏗️ Creating native-style HUD window")
-        
         // Get screen dimensions
-        guard let screen = NSScreen.main else {
-            //print("❌ No screen available")
-            return
-        }
+        guard let screen = NSScreen.main else { return }
         
         let screenFrame = screen.visibleFrame
-        let windowSize = NSSize(width: 200, height: 200) // Square 200x200
+        let windowSize = NSSize(width: 200, height: 200)
         
-        // Different Y positioning options (uncomment the one you want):
-        
-        // Option 1: Distance from bottom of screen
+        // Position window
         let windowOrigin = NSPoint(
             x: screenFrame.midX - windowSize.width / 2,
             y: screenFrame.minY + 140 // 150 pixels from bottom
         )
         
-        // Option 2: Distance from top of screen (uncomment to use)
-        // let windowOrigin = NSPoint(
-        //     x: screenFrame.midX - windowSize.width / 2,
-        //     y: screenFrame.maxY - windowSize.height - 150 // 150 pixels from top
-        // )
-        
-        // Option 3: Fraction of screen height (uncomment to use)
-        // let windowOrigin = NSPoint(
-        //     x: screenFrame.midX - windowSize.width / 2,
-        //     y: screenFrame.minY + (screenFrame.height * 0.3) // 30% up from bottom
-        // )
-        
         let windowFrame = NSRect(origin: windowOrigin, size: windowSize)
-        //print("🖼️ Window frame: \(windowFrame)")
         
         // Create window with no style mask for borderless appearance
         let window = NSWindow(
@@ -81,11 +58,11 @@ class HUDController {
             defer: false
         )
         
-        // Configure window properties
+        // Configure window properties - NO SHADOW to prevent lines
         window.level = .floating
         window.backgroundColor = NSColor.clear
         window.isOpaque = false
-        window.hasShadow = true
+        window.hasShadow = false  // ← CHANGED: No shadow to prevent border lines
         window.ignoresMouseEvents = true
         window.collectionBehavior = [.canJoinAllSpaces, .stationary]
         
@@ -96,15 +73,12 @@ class HUDController {
         // Store reference and show
         self.hudWindow = window
         window.orderFront(nil)
-        
-        //print("✅ Native-style HUD window created and shown")
-        //print("🔍 Window visible: \(window.isVisible)")
     }
     
     private func createHUDContentView(iconName: String, text: String, iconColor: NSColor, size: NSSize) -> NSView {
         let containerView = NSView(frame: NSRect(origin: .zero, size: size))
         
-        // Create visual effect view for the blurred background - NO BORDER
+        // Create visual effect view for the blurred background - COMPLETELY BORDERLESS
         let effectView = NSVisualEffectView(frame: containerView.bounds)
         effectView.material = .hudWindow
         effectView.blendingMode = .behindWindow
@@ -112,9 +86,13 @@ class HUDController {
         effectView.wantsLayer = true
         effectView.layer?.cornerRadius = 16
         effectView.layer?.masksToBounds = true
-        // Explicitly ensure no border
+        
+        // ENHANCED: Completely remove any potential borders
         effectView.layer?.borderWidth = 0
         effectView.layer?.borderColor = nil
+        effectView.layer?.shouldRasterize = false
+        effectView.layer?.contentsScale = NSScreen.main?.backingScaleFactor ?? 2.0
+        
         containerView.addSubview(effectView)
         
         // Create icon image view
@@ -172,12 +150,7 @@ class HUDController {
     }
     
     private func hideHUD() {
-        //print("👻 Hiding HUD with animation")
-        
-        guard let window = hudWindow else {
-            //print("❌ No window to hide")
-            return
-        }
+        guard let window = hudWindow else { return }
         
         // Smooth fade out animation like native macOS HUDs
         NSAnimationContext.runAnimationGroup({ context in
@@ -189,7 +162,6 @@ class HUDController {
             DispatchQueue.main.async {
                 window.orderOut(nil)
                 self?.hudWindow = nil
-                //print("✅ HUD animation completed and hidden")
             }
         }
     }
