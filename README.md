@@ -9,6 +9,7 @@ CapsLockIndicator is a macOS menu bar application that displays HUD notification
 - **Menu Bar Integration:** Seamlessly integrates into the macOS menu bar with customizable preferences.
 - **Customizable HUDs:** Options to enable or disable individual HUDs for Caps Lock and input source changes.
 - **Accessibility:** Built-in checks and requests for accessibility permissions to ensure functionality.
+- **Always Follow Your Screen:** Technically speaking, yes, if you have multiple monitors and it shold always show on your active screen
 
 ## Installation
 ### Download from Releases
