@@ -12,6 +12,7 @@ CapsLockIndicator is a macOS menu bar application that displays HUD notification
 
 ## Installation
 ### Download from Releases
+Simply download the compiled app and save it in your Application folder
 
 ### Build from Source
 1. Clone this repository
