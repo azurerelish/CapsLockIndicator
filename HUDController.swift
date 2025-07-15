@@ -3,6 +3,8 @@ import Cocoa
 class HUDController {
     private var hudWindow: NSWindow?
     private var hideWorkItem: DispatchWorkItem?
+    private var hudWindowId: Int = 0  // NEW: Track window IDs
+    private var emergencyCleanupTimer: Timer?  // NEW: Failsafe timer
     
     func showCapsLockStatus(_ isEnabled: Bool) {
         let iconName = isEnabled ? "capslock.fill" : "capslock"
@@ -16,10 +18,52 @@ class HUDController {
     }
     
     private func showHUD(iconName: String, text: String, iconColor: NSColor) {
+        // CRITICAL: Always run on main thread and ensure cleanup happens first
         DispatchQueue.main.async { [weak self] in
-            self?.cleanupHUD()
-            self?.createAndShowWindow(iconName: iconName, text: text, iconColor: iconColor)
-            self?.scheduleHide()
+            // Force cleanup any existing HUD immediately
+            self?.emergencyCleanup()
+            
+            // Create new HUD with unique ID
+            self?.hudWindowId += 1
+            let currentId = self?.hudWindowId ?? 0
+            
+            // Small delay to ensure cleanup completes
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.05) { [weak self] in
+                // Only proceed if we're still the latest request
+                guard self?.hudWindowId == currentId else { return }
+                
+                self?.createAndShowWindow(iconName: iconName, text: text, iconColor: iconColor)
+                self?.scheduleHide(for: currentId)
+                self?.scheduleEmergencyCleanup()
+            }
+        }
+    }
+    
+    private func emergencyCleanup() {
+        // Cancel ALL operations
+        hideWorkItem?.cancel()
+        hideWorkItem = nil
+        emergencyCleanupTimer?.invalidate()
+        emergencyCleanupTimer = nil
+        
+        // Force hide any window immediately
+        if let window = hudWindow {
+            window.alphaValue = 0
+            window.orderOut(nil)
+            hudWindow = nil
+        }
+        
+        // Clear any animations
+        NSAnimationContext.runAnimationGroup({ context in
+            context.duration = 0
+        })
+    }
+    
+    private func scheduleEmergencyCleanup() {
+        // NEW: Failsafe - force cleanup after 3 seconds no matter what
+        emergencyCleanupTimer?.invalidate()
+        emergencyCleanupTimer = Timer.scheduledTimer(withTimeInterval: 3.0, repeats: false) { [weak self] _ in
+            self?.emergencyCleanup()
         }
     }
     
@@ -35,9 +79,32 @@ class HUDController {
         }
     }
     
+    private func forceCleanupHUD() {
+        // ENHANCED: Force cleanup with additional safety
+        hideWorkItem?.cancel()
+        hideWorkItem = nil
+        
+        if let window = hudWindow {
+            // Force immediate cleanup
+            window.alphaValue = 0
+            window.orderOut(nil)
+            hudWindow = nil
+        }
+        
+        // Clear any lingering animations
+        NSAnimationContext.runAnimationGroup({ context in
+            context.duration = 0
+        })
+    }
+    
     private func createAndShowWindow(iconName: String, text: String, iconColor: NSColor) {
-        // Get screen dimensions
-        guard let screen = NSScreen.main else { return }
+        // Get screen where the mouse cursor is currently located
+        let mouseLocation = NSEvent.mouseLocation
+        let targetScreen = NSScreen.screens.first { screen in
+            screen.frame.contains(mouseLocation)
+        } ?? NSScreen.main
+        
+        guard let screen = targetScreen else { return }
         
         let screenFrame = screen.visibleFrame
         let windowSize = NSSize(width: 200, height: 200)
@@ -84,7 +151,7 @@ class HUDController {
         effectView.blendingMode = .behindWindow
         effectView.state = .active
         effectView.wantsLayer = true
-        effectView.layer?.cornerRadius = 16
+        effectView.layer?.cornerRadius = 12
         effectView.layer?.masksToBounds = true
         
         // ENHANCED: Completely remove any potential borders
@@ -140,9 +207,16 @@ class HUDController {
         return containerView
     }
     
-    private func scheduleHide() {
+    private func scheduleHide(for windowId: Int) {
+        // ENHANCED: Ensure no overlapping timers
+        hideWorkItem?.cancel()  // Cancel any existing timer first
+        
         let workItem = DispatchWorkItem { [weak self] in
-            self?.hideHUD()
+            // Only proceed if this is still the current window
+            guard let strongSelf = self,
+                  strongSelf.hudWindowId == windowId,
+                  strongSelf.hideWorkItem != nil else { return }
+            strongSelf.hideHUD()
         }
         
         hideWorkItem = workItem
@@ -152,16 +226,24 @@ class HUDController {
     private func hideHUD() {
         guard let window = hudWindow else { return }
         
+        // Clear the work item reference immediately
+        hideWorkItem = nil
+        emergencyCleanupTimer?.invalidate()
+        emergencyCleanupTimer = nil
+        
         // Smooth fade out animation like native macOS HUDs
         NSAnimationContext.runAnimationGroup({ context in
-            context.duration = 0.3 // Smooth 0.3 second fade
+            context.duration = 0.3
             context.timingFunction = CAMediaTimingFunction(name: .easeInEaseOut)
             window.animator().alphaValue = 0.0
         }) { [weak self] in
             // After animation completes, remove the window
-            DispatchQueue.main.async {
-                window.orderOut(nil)
-                self?.hudWindow = nil
+            DispatchQueue.main.async { [weak self] in
+                // Only cleanup if this is still our window
+                if self?.hudWindow === window {
+                    window.orderOut(nil)
+                    self?.hudWindow = nil
+                }
             }
         }
     }
