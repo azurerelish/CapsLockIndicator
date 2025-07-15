@@ -6,6 +6,7 @@ class CapsLockMonitor {
     private var runLoopSource: CFRunLoopSource?
     private var lastCapsLockState: Bool = false
     private var isMonitoring = false
+    private var isInitialCheck = true  // NEW: Track if this is the first check
     
     var onCapsLockChanged: ((Bool) -> Void)?
     
@@ -92,6 +93,12 @@ class CapsLockMonitor {
         if capsLockPressed != lastCapsLockState {
             lastCapsLockState = capsLockPressed
             
+            // Skip initial state - don't show HUD on app startup
+            if isInitialCheck {
+                isInitialCheck = false
+                return
+            }
+            
             // Call the callback asynchronously to avoid blocking
             DispatchQueue.main.async { [weak self] in
                 self?.onCapsLockChanged?(capsLockPressed)
@@ -104,8 +111,15 @@ class CapsLockMonitor {
         let capsLockEnabled = flags.contains(.maskAlphaShift)
         lastCapsLockState = capsLockEnabled
         
+        // DON'T trigger callback on initial check - just update menu bar
         DispatchQueue.main.async { [weak self] in
+            // Only update menu bar, don't show HUD
             self?.onCapsLockChanged?(capsLockEnabled)
+        }
+        
+        // After a short delay, enable normal operation
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) { [weak self] in
+            self?.isInitialCheck = false
         }
     }
     
